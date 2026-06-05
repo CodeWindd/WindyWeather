@@ -1,19 +1,7 @@
 const NWS_SERVICE = {
-    getIcon: (text, isDay = true) => {
-        let t = text.toLowerCase();
-        const r = "icons/";
-        if (t.includes("thunderstorm") || t.includes("t-storm")) {
-            if (t.includes("strong") || t.includes("severe")) return r + "strong_thunderstorms.png";
-            return isDay ? r + "isolated_scattered_thunderstorms_day.png" : r + "isolated_scattered_thunderstorms_night.png";
-        }
-        if (t.includes("snow")) return r + "cloudy_with_snow.png";
-        if (t.includes("rain") || t.includes("showers")) return isDay ? r + "sunny_with_rain.png" : r + "cloudy_with_rain.png";
-        return isDay ? r + "clear_day.png" : r + "clear_night.png";
-    },
-
     async fetchFullData(lat, lon) {
         try {
-            const h = { 'User-Agent': 'PixelWeather/16.0' };
+            const h = { 'User-Agent': 'PixelWeather/17.0' };
             const pRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`, { headers: h });
             const p = await pRes.json();
             const [d, hr, al] = await Promise.all([
@@ -25,31 +13,25 @@ const NWS_SERVICE = {
         } catch (e) { return null; }
     },
 
-    analyzeSevere(weather) {
-        const forecastText = weather.daily[0].detailedForecast.toLowerCase();
+    getSevereOutlook(weather) {
+        const text = weather.daily[0].detailedForecast.toLowerCase();
         const hourly = weather.hourly.slice(0, 24);
         
-        // Probabilities Extraction (Mocking percentages based on NWS probability strings)
-        const getProb = (keywords) => {
-            if (keywords.some(k => forecastText.includes(k))) return Math.floor(Math.random() * 15) + 5; // Base 5-20%
-            return 0;
-        };
+        let risk = { level: "NONE", color: "var(--risk-none)", tornado: 0, wind: 2, hail: 0 };
+
+        // Detection Logic for SPC levels
+        if (text.includes("high risk")) { risk.level = "HIGH RISK"; risk.color = "var(--risk-high)"; risk.tornado = 15; risk.wind = 60; risk.hail = 45; }
+        else if (text.includes("moderate risk")) { risk.level = "MODERATE RISK"; risk.color = "var(--risk-moderate)"; risk.tornado = 10; risk.wind = 45; risk.hail = 30; }
+        else if (text.includes("enhanced risk")) { risk.level = "ENHANCED RISK"; risk.color = "var(--risk-enhanced)"; risk.tornado = 5; risk.wind = 30; risk.hail = 15; }
+        else if (text.includes("slight risk")) { risk.level = "SLIGHT RISK"; risk.color = "var(--risk-slight)"; risk.tornado = 2; risk.wind = 15; risk.hail = 5; }
+        else if (text.includes("marginal risk")) { risk.level = "MARGINAL RISK"; risk.color = "var(--risk-marginal)"; risk.tornado = 0; risk.wind = 5; risk.hail = 2; }
 
         // Window detection
-        const severeHours = hourly.filter(h => h.shortForecast.toLowerCase().includes('thunderstorm'));
-        let window = "No severe weather expected";
-        if (severeHours.length > 0) {
-            const start = new Date(severeHours[0].startTime).toLocaleTimeString([], {hour:'numeric'});
-            const end = new Date(severeHours[severeHours.length-1].startTime).toLocaleTimeString([], {hour:'numeric'});
-            window = `${start} — ${end}`;
-        }
+        const storms = hourly.filter(h => h.shortForecast.toLowerCase().includes("thunderstorm"));
+        risk.window = storms.length > 0 ? 
+            `${new Date(storms[0].startTime).toLocaleTimeString([], {hour:'numeric'})} - ${new Date(storms[storms.length-1].startTime).toLocaleTimeString([], {hour:'numeric'})}` : 
+            "No severe window identified";
 
-        return {
-            window: window,
-            tornado: forecastText.includes('tornado') ? 5 : 0,
-            wind: forecastText.includes('damaging wind') || forecastText.includes('gusts') ? 15 : 2,
-            hail: forecastText.includes('hail') ? 15 : 0,
-            hazards: forecastText.split('.').filter(s => s.includes('wind') || s.includes('thunderstorm') || s.includes('hail')).join('.')
-        };
+        return risk;
     }
 };
