@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     let weather = null, alerts = [];
-    let lat = 41.8781, lon = -87.6298; // Chicago Default
+    let curLat = 41.8781, curLon = -87.6298; // Chicago Default
 
     async function updateWeather(l1, l2) {
-        const data = await NWS_SERVICE.fetchFullWeather(l1, l2);
+        const data = await NWS_SERVICE.fetchNWS(l1, l2);
         if (!data) return;
         weather = data;
         alerts = await NWS_SERVICE.getAlerts(l1, l2);
@@ -27,12 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             view.innerHTML = `
                 <div class="search-box">
-                    <input type="text" class="search-input" placeholder="Search for city...">
+                    <input type="text" class="search-bar" placeholder="Search for city...">
                     <div id="results" class="search-dropdown"></div>
                 </div>
                 <section class="hero fade-in">
-                    <div class="hero-condition">${now.shortForecast}</div>
-                    <div class="hero-main">
+                    <div class="hero-cond">${now.shortForecast}</div>
+                    <div class="hero-row">
                         <span class="hero-temp">${now.temperature}</span>
                         <img src="${NWS_SERVICE.getIcon(now.shortForecast, now.isDaytime, now.temperature)}" class="hero-icon">
                     </div>
@@ -41,13 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </section>
                 ${alertsHTML}
                 <div class="card"><div class="card-header">✨ AI Weather Report</div><div class="card-body">${weather.daily[0].detailedForecast}</div></div>
-                <div class="card"><div class="card-header">📈 Weather Insight</div><div class="card-body">Expect ${now.shortForecast.toLowerCase()} to continue throughout the hour.</div></div>
+                <div class="card"><div class="card-header">📈 Weather Insight</div><div class="card-body">Expect ${now.shortForecast.toLowerCase()} conditions to persist.</div></div>
             `;
-            bindSearch();
+            setupSearch();
         } 
         
         else if (tab === 'hourly') {
-            const list = weather.hourly.slice(0, 48).map((h, i) => `
+            const list = weather.hourly.slice(0, 48).map(h => `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 0; border-bottom:1px solid rgba(255,255,255,0.05)">
                     <div>
                         <div style="font-weight:500">${new Date(h.startTime).getHours()}:00</div>
@@ -76,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (tab === 'radar') {
             view.innerHTML = `
                 <div class="card fade-in" style="padding:0; height:75vh; overflow:hidden">
-                    <iframe src="https://www.rainviewer.com/map.html?loc=${lat},${lon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1" style="width:100%; height:100%; border:none"></iframe>
+                    <iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1" style="width:100%; height:100%; border:none"></iframe>
                 </div>`;
         }
     }
 
-    function bindSearch() {
+    function setupSearch() {
         const input = document.querySelector('.search-input');
         const box = document.getElementById('results');
         if (!input) return;
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             box.innerHTML = (data.results || []).map(r => `<div class="dropdown-item" data-lat="${r.latitude}" data-lon="${r.longitude}">${r.name}, ${r.admin1 || r.country}</div>`).join('');
             document.querySelectorAll('.dropdown-item').forEach(el => {
-                el.onclick = () => { lat = el.dataset.lat; lon = el.dataset.lon; updateWeather(lat, lon); };
+                el.onclick = () => { curLat = el.dataset.lat; curLon = el.dataset.lon; updateWeather(curLat, curLon); };
             });
         };
     }
@@ -105,5 +105,5 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('parallax-container').style.transform = `translate3d(0, -${window.pageYOffset * 0.25}px, 0)`;
     };
 
-    updateWeather(lat, lon);
+    updateWeather(curLat, curLon);
 });
