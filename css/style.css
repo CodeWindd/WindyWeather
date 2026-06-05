@@ -1,7 +1,7 @@
 :root {
     --bg: #000;
-    --surface: rgba(26, 26, 28, 0.85);
-    --card: rgba(40, 40, 42, 0.7);
+    --surface: rgba(26, 26, 28, 0.9);
+    --card: rgba(45, 45, 48, 0.75);
     --text: #ffffff;
     --text-dim: #a1a1aa;
     --accent: #c2e7ff;
@@ -12,44 +12,45 @@
 body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Product Sans', sans-serif; overflow-x: hidden; }
 
 #parallax-container { position: fixed; top: 0; width: 100vw; height: 110vh; z-index: -1; }
-#backdrop { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); } /* CLEAR BACKDROP */
+#backdrop { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
 
-.app-header { display: flex; justify-content: space-between; padding: 20px 24px; align-items: center; }
+.pixel-header { display: flex; justify-content: space-between; padding: 20px 24px; align-items: center; }
 .city-title { font-size: 1.3rem; font-weight: 500; }
 
-#app { padding: 0 16px 140px 16px; max-width: 500px; margin: 0 auto; }
+#app { padding: 0 16px 140px 16px; max-width: 500px; margin: 0 auto; min-height: 100vh; }
 
 /* Search UI */
-.search-section { position: relative; margin-bottom: 24px; }
 .search-bar { width: 100%; background: var(--surface); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 16px 24px; color: #fff; font-size: 1rem; backdrop-filter: blur(20px); }
 .search-results { position: absolute; width: 100%; background: #1c1c1e; border-radius: 20px; top: 65px; z-index: 1000; overflow: hidden; border: 1px solid #333; display: none; }
-.search-item { padding: 16px 20px; border-bottom: 1px solid #222; cursor: pointer; }
+.search-item { padding: 18px 20px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+.search-item:hover { background: var(--card); }
 
 /* Hero Section */
-.hero { text-align: center; padding: 10px 0 35px 0; }
+.hero { text-align: center; padding: 20px 0 40px 0; }
+.hero-temp { font-size: clamp(7.5rem, 25vw, 9.5rem); font-weight: 300; letter-spacing: -6px; line-height: 1; }
 .hero-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-left: 20px; }
-.hero-temp { font-size: clamp(7rem, 25vw, 9rem); font-weight: 300; letter-spacing: -6px; line-height: 1; }
-.hero-icon { width: 80px; height: 80px; object-fit: contain; }
+.hero-icon { width: 85px; height: 85px; object-fit: contain; }
 
 /* Bento Cards */
-.card { background: var(--surface); backdrop-filter: blur(30px); border-radius: var(--radius); padding: 24px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
-.card-head { color: var(--text-dim); font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; }
+.card { background: var(--surface); backdrop-filter: blur(40px); border-radius: var(--radius); padding: 24px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.1); }
+.card-head { color: var(--text-dim); font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* 48H Horizontal Pills */
+/* 48H Hourly Pills */
 .h-scroll { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
 .h-scroll::-webkit-scrollbar { display: none; }
-.h-pill { background: var(--card); min-width: 80px; padding: 18px 5px; border-radius: 40px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+.h-pill { background: var(--card); min-width: 85px; padding: 18px 5px; border-radius: 40px; text-align: center; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
 .h-pill.active { background: var(--accent); color: #000; }
-.h-pill img { width: 34px; height: 34px; margin: 8px 0; }
+.h-pill img { width: 36px; height: 36px; margin: 10px 0; }
 
-/* 7-Day Vertical Rows */
-.v-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+/* Weekly List */
+.v-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-/* Navigation */
-.pill-nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 420px; z-index: 2000; }
-.pill-nav { background: rgba(30, 30, 32, 0.9); backdrop-filter: blur(25px); border-radius: var(--radius); display: flex; padding: 6px; border: 1px solid rgba(255,255,255,0.1); }
-.tab-btn { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 14px 0; font-weight: 700; border-radius: var(--radius); cursor: pointer; }
+/* Navigation Tab Bar (5 Tabs) */
+.pill-nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 480px; z-index: 2000; }
+.pill-nav { background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(25px); border-radius: var(--radius); display: flex; padding: 5px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+.tab-btn { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 12px 0; font-weight: 700; font-size: 0.75rem; border-radius: var(--radius); cursor: pointer; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 .tab-btn.active { background: var(--accent); color: #000; }
 
-.fade-in { animation: fadeIn 0.6s ease forwards; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* Animations */
+.fade-in { animation: animIn 0.5s cubic-bezier(0.2, 0, 0, 1) forwards; }
+@keyframes animIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
