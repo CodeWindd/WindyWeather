@@ -1,13 +1,5 @@
 const CACHE_NAME = 'pixel-weather-v3';
-const ASSETS = [
-  './',
-  './index.html',
-  './css/style.css',
-  './js/app.js',
-  './js/nws.js',
-  './assets/backdrops/backdrop.png',
-  './icons/clear_day.png'
-];
+const ASSETS = ['./', './index.html', './css/style.css', './js/app.js', './js/nws.js', './assets/backdrops/backdrop.png', './icons/clear_day.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
