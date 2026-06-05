@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </section>
                 ${weather.alerts.map(a => `<div class="card fade-in" style="border-left:8px solid #ff4b4b"><b>${a.properties.event}</b></div>`).join('')}
                 <div class="card fade-in">
-                    <div class="card-head">✨ Weather Insight</div>
+                    <div class="card-head">Weather Conditions</div>
                     <div class="card-body">Currently ${desc.toLowerCase()}. ${weather.daily[0].detailedForecast}</div>
                 </div>`;
         } else if (tab === 'hourly') {
