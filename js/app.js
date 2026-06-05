@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
         await update(lat, lon, name);
     };
 
+    window.deleteSaved = () => {
+        if (confirm("Delete all saved locations?")) {
+            savedLocations = [];
+            localStorage.removeItem('saved_pixel_locs');
+            render('saved');
+        }
+    };
+
     async function update(l1, l2, name) {
         weather = await NWS_SERVICE.fetchForecast(l1, l2);
         alerts = await NWS_SERVICE.getAlerts(l1, l2);
@@ -31,7 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(now.setMinutes(0,0,0)));
 
         if (tab === 'current') {
-            const alertCards = alerts.map(a => `<div class="card" style="border-left:8px solid #ff4b4b; background:rgba(255,0,0,0.1)"><h4>${a.properties.event}</h4></div>`).join('');
+            const lightning = NWS_SERVICE.parseLightning(alerts);
+            const lightningHTML = lightning ? `
+                <div class="card lightning-card fade-in">
+                    <div class="card-head">⚡ Lightning Detector</div>
+                    <div class="card-body">Lightning with severe storms detected <b>${lightning.detail}</b>.</div>
+                </div>` : '';
+
             view.innerHTML = `
                 <section class="hero fade-in">
                     <div style="font-size:1.4rem">${hourlySync[0].shortForecast}</div>
@@ -41,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div style="color:var(--text-dim)">High ${weather.daily[0].temperature}° · Low ${weather.daily[1].temperature}°</div>
                 </section>
-                ${alertCards}
+                ${lightningHTML}
                 <div class="card fade-in">
                     <div class="card-head">✨ Weather Insight</div>
                     <div class="card-body">Currently ${hourlySync[0].shortForecast.toLowerCase()}. ${weather.daily[0].detailedForecast}</div>
@@ -66,9 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="card fade-in" style="width:100%; text-align:left; color:white; display:block; cursor:pointer" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')">
                     <b>${loc.name}</b>
                 </button>`).join('') || '<p style="text-align:center">No saved locations.</p>';
-            view.innerHTML = list;
+            view.innerHTML = `<div class="card-head">Saved Locations</div>${list}<button class="delete-btn" onclick="window.deleteSaved()">Delete All Saved</button>`;
         } else if (tab === 'radar') {
-            // RAINVIEWER PALETTE 1, 512PX
             view.innerHTML = `<div class="card fade-in" style="padding:0; height:65vh; overflow:hidden">
                 <iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1&p=1&ts=512" style="width:100%; height:100%; border:none"></iframe>
             </div>`;
