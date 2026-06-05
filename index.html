@@ -3,28 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pixel Weather</title>
+    <title>Weather</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="onyx-dark">
     <div id="parallax-container"><img src="assets/backdrops/backdrop.png" id="backdrop"></div>
 
-    <header class="pixel-header">
+    <header class="app-header">
         <div class="nav-btn">←</div>
-        <div id="city-name" class="city-title">Chicago</div>
+        <div id="city-display" class="city-name">Chicago</div>
         <div class="nav-btn">⋮</div>
     </header>
 
     <main id="app">
-        <div class="search-box">
-            <input type="text" id="global-search" class="search-bar" placeholder="Search location...">
-            <div id="results" class="search-results"></div>
+        <!-- Persistent Search Bar -->
+        <div class="search-section">
+            <div class="search-pill">
+                <input type="text" id="loc-search" placeholder="Search location..." autocomplete="off">
+            </div>
+            <div id="search-results" class="results-box"></div>
         </div>
-        <div id="weather-view" class="fade-in"></div>
+
+        <!-- Dynamic Content -->
+        <div id="weather-view"></div>
     </main>
 
-    <nav class="pill-nav-container">
+    <!-- Fixed Tab Bar -->
+    <nav class="nav-wrapper">
         <div class="pill-nav">
             <button class="tab-btn active" data-tab="current">Current</button>
             <button class="tab-btn" data-tab="hourly">Hourly</button>
