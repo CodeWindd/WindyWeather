@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let weather = null;
+    let weather = null, alerts = [];
     let savedLocations = JSON.parse(localStorage.getItem('saved_pixel_locs')) || [];
     let curLat = 41.8781, curLon = -87.6298;
 
-    // Global Load function assigned to window to ensure clickability
     window.loadLoc = async (lat, lon, name) => {
         curLat = lat; curLon = lon;
         if (!savedLocations.some(l => l.name === name)) {
@@ -16,22 +15,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     async function update(l1, l2, name) {
-        const data = await NWS_SERVICE.fetchForecast(l1, l2);
-        if (!data) return;
-        weather = data;
-        document.getElementById('city-name').innerText = name || data.city;
+        weather = await NWS_SERVICE.fetchForecast(l1, l2);
+        alerts = await NWS_SERVICE.getAlerts(l1, l2);
+        if (!weather) return;
+        document.getElementById('city-name').innerText = name || weather.city;
         render(document.querySelector('.tab-btn.active').dataset.tab);
     }
 
     function render(tab) {
         const view = document.getElementById('weather-view');
-        if (!view || !weather) return;
         view.innerHTML = '';
+        if (!weather) return;
 
-        const nowSys = new Date();
-        const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(nowSys.setMinutes(0,0,0)));
+        const now = new Date();
+        const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(now.setMinutes(0,0,0)));
 
         if (tab === 'current') {
+            const alertCards = alerts.map(a => `<div class="card" style="border-left:8px solid #ff4b4b; background:rgba(255,0,0,0.1)"><h4>${a.properties.event}</h4></div>`).join('');
             view.innerHTML = `
                 <section class="hero fade-in">
                     <div style="font-size:1.4rem">${hourlySync[0].shortForecast}</div>
@@ -41,14 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div style="color:var(--text-dim)">High ${weather.daily[0].temperature}° · Low ${weather.daily[1].temperature}°</div>
                 </section>
+                ${alertCards}
                 <div class="card fade-in">
                     <div class="card-head">✨ Weather Insight</div>
-                    <div class="card-body">${weather.daily[0].detailedForecast}</div>
+                    <div class="card-body">Currently ${hourlySync[0].shortForecast.toLowerCase()}. ${weather.daily[0].detailedForecast}</div>
                 </div>`;
         } else if (tab === 'hourly') {
             const items = hourlySync.slice(0, 48).map((h, i) => {
-                const time = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
-                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${time}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, h.isDaytime)}"><b>${h.temperature}°</b></div>`;
+                const timeStr = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
+                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${timeStr}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, h.isDaytime)}"><b>${h.temperature}°</b></div>`;
             }).join('');
             view.innerHTML = `<div class="card fade-in"><div class="card-head">48-Hour Forecast</div><div class="h-scroll">${items}</div></div>`;
         } else if (tab === 'weekly') {
@@ -62,17 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
             view.innerHTML = `<div class="card">${items}</div>`;
         } else if (tab === 'saved') {
             const list = savedLocations.map(loc => `
-                <button class="card fade-in saved-btn" style="width:100%; text-align:left; color:white; display:block" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')">
-                    <div style="display:flex; justify-content:space-between; align-items:center">
-                        <b style="font-size:1.1rem">${loc.name}</b>
-                        <span style="opacity:0.4">View →</span>
-                    </div>
+                <button class="card fade-in" style="width:100%; text-align:left; color:white; display:block; cursor:pointer" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')">
+                    <b>${loc.name}</b>
                 </button>`).join('') || '<p style="text-align:center">No saved locations.</p>';
             view.innerHTML = list;
         } else if (tab === 'radar') {
-            // radar.weather.gov blocks iframes, so we use the most identical embeddable NWS style map
+            // RAINVIEWER PALETTE 1, 512PX
             view.innerHTML = `<div class="card fade-in" style="padding:0; height:65vh; overflow:hidden">
-                <iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1" style="width:100%; height:100%; border:none"></iframe>
+                <iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1&p=1&ts=512" style="width:100%; height:100%; border:none"></iframe>
             </div>`;
         }
     }
