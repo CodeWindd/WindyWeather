@@ -1,11 +1,12 @@
-const CACHE_NAME = 'pixel-weather-v1';
+const CACHE_NAME = 'pixel-weather-v2';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
   './js/app.js',
   './js/nws.js',
-  './assets/backdrops/backdrop.png'
+  './assets/backdrops/backdrop.png',
+  './icons/clear_day.png'
 ];
 
 self.addEventListener('install', (e) => {
