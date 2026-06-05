@@ -1,19 +1,12 @@
 :root {
     --bg: #000;
-    --surface: rgba(28, 28, 30, 0.94);
+    --surface: rgba(28, 28, 30, 0.95);
     --card: rgba(45, 45, 48, 0.7);
     --text: #ffffff;
     --text-dim: #a1a1aa;
     --accent: #c2e7ff;
     --radius: 34px;
-    
-    /* SPC Official Risk Colors */
-    --risk-none: #000000;
-    --risk-marginal: #00a859;
-    --risk-slight: #fff200;
-    --risk-enhanced: #f7941d;
-    --risk-moderate: #ff0000;
-    --risk-high: #ff00ff;
+    --bezier: cubic-bezier(0.2, 0, 0, 1);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
@@ -22,22 +15,51 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Produ
 #parallax-container { position: fixed; top: 0; width: 100vw; height: 110vh; z-index: -1; }
 #backdrop { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.65); }
 
+.pixel-header { display: flex; justify-content: space-between; padding: 20px 24px; align-items: center; z-index: 100; }
+.city-title { font-size: 1.4rem; font-weight: 500; }
+.header-action { font-size: 1.5rem; opacity: 0.8; }
+
 #app { padding: 0 16px 140px 16px; max-width: 500px; margin: 0 auto; min-height: 100vh; }
 
+/* Search Bar */
+.search-container { position: relative; margin-bottom: 24px; z-index: 5000; }
+.search-bar { width: 100%; background: var(--surface); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 18px 24px; color: #fff; font-size: 1rem; backdrop-filter: blur(20px); }
+.search-results { position: absolute; width: 100%; background: #1c1c1e; border-radius: 24px; top: 70px; overflow: hidden; border: 1px solid #333; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.search-item { padding: 18px 20px; border-bottom: 1px solid #222; cursor: pointer; display: block; width: 100%; text-align: left; background: none; color: white; border: none; font-size: 1rem; }
+
+/* Hero */
+.hero { text-align: center; padding: 10px 0 35px 0; }
+.hero-cond { font-size: 1.5rem; font-weight: 400; margin-bottom: 5px; }
+.hero-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-left: 20px; }
+.hero-temp { font-size: clamp(7.5rem, 25vw, 10rem); font-weight: 300; letter-spacing: -6px; line-height: 1; }
+.hero-icon { width: 90px; height: 90px; object-fit: contain; }
+
+/* Sun Arc */
+.sun-card-body { height: 120px; width: 100%; position: relative; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 10px; }
+.sun-arc-svg { width: 100%; height: 90px; }
+.sun-track { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 2.5; stroke-dasharray: 4 6; }
+.sun-node { fill: #ffeb3b; filter: drop-shadow(0 0 8px #ffeb3b); transition: all 1.5s var(--bezier); }
+
+/* Bento Cards */
 .card { background: var(--surface); backdrop-filter: blur(50px); border-radius: var(--radius); padding: 24px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.08); }
+.card-head { color: var(--text-dim); font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
-/* Severe Tab UI */
-.risk-banner { padding: 20px; border-radius: 24px; text-align: center; font-weight: 700; font-size: 1.2rem; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-.hazard-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.prob-bar-container { width: 120px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
-.prob-fill { height: 100%; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+/* Lists & Pills */
+.h-scroll { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
+.h-pill { background: var(--card); min-width: 90px; padding: 22px 5px; border-radius: 45px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+.h-pill.active { background: var(--accent); color: #000; }
+.h-pill img { width: 36px; margin: 8px 0; }
+.precip-badge { color: #a8c7fa; font-size: 0.75rem; font-weight: 700; }
 
-/* Navigation (Pill Style) */
-.pill-nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 520px; z-index: 4000; }
-.pill-nav { background: rgba(28, 28, 30, 0.98); backdrop-filter: blur(30px); border-radius: var(--radius); display: flex; padding: 6px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 15px 50px rgba(0,0,0,0.9); overflow-x: auto; scrollbar-width: none; }
-.pill-nav::-webkit-scrollbar { display: none; }
-.tab-btn { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 12px 10px; font-weight: 700; font-size: 0.68rem; border-radius: var(--radius); cursor: pointer; white-space: nowrap; }
+.v-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border-radius: 28px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.03); }
+
+/* Tab Bar */
+.pill-nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 480px; z-index: 4000; }
+.pill-nav { background: rgba(28, 28, 30, 0.98); backdrop-filter: blur(30px); border-radius: var(--radius); display: flex; padding: 6px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 15px 50px rgba(0,0,0,0.9); }
+.tab-btn { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 14px 0; font-weight: 700; font-size: 0.75rem; border-radius: var(--radius); cursor: pointer; transition: 0.3s; }
 .tab-btn.active { background: var(--accent); color: #000; }
 
-.fade-in { animation: animIn 0.5s ease-out forwards; }
-@keyframes animIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.delete-btn { background: #ffb4ab; color: #601410; border: none; padding: 15px; border-radius: var(--radius); font-weight: 700; width: 100%; margin-top: 10px; cursor: pointer; }
+
+.fade-in { animation: animIn 0.6s var(--bezier) forwards; }
+@keyframes animIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
