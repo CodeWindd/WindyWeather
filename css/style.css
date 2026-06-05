@@ -1,68 +1,54 @@
 :root {
     --bg: #000;
     --surface: rgba(28, 28, 30, 0.85);
-    --card-inner: rgba(45, 45, 48, 0.6);
+    --card: rgba(45, 45, 48, 0.6);
     --text: #fff;
     --text-dim: #a1a1aa;
     --accent: #c2e7ff;
     --radius: 34px;
 }
 
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Product Sans', sans-serif; overflow-x: hidden; }
+
 #parallax-container { position: fixed; top: 0; width: 100vw; height: 120vh; z-index: -1; }
 #backdrop { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.4) blur(10px); }
 
-.pixel-header { display: flex; justify-content: space-between; padding: 15px 20px; align-items: center; }
-.city-title { font-size: 1.2rem; font-weight: 500; }
+.app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+.city-name { font-size: 1.2rem; font-weight: 500; }
+.nav-btn { font-size: 1.4rem; opacity: 0.8; cursor: pointer; }
 
-#app { padding: 0 12px 140px 12px; max-width: 480px; margin: 0 auto; }
+#app { padding: 0 12px 140px 12px; max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
-/* Hero */
+/* Search Bar Fix */
+.search-section { position: relative; margin-bottom: 20px; z-index: 1000; }
+.search-pill { background: var(--card); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; }
+.search-pill input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 1rem; }
+.results-box { position: absolute; top: 55px; width: 100%; background: #1c1c1e; border-radius: 20px; overflow: hidden; display: none; border: 1px solid #333; }
+.search-item { padding: 15px 20px; border-bottom: 1px solid #222; cursor: pointer; font-size: 0.95rem; }
+
+/* Hero Section */
 .hero { text-align: center; padding: 10px 0 30px; }
-.hero-temp { font-size: clamp(7rem, 25vw, 9.5rem); font-weight: 300; letter-spacing: -6px; line-height: 1; }
-.hero-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-left: 25px; }
-.hero-icon { width: 80px; }
+.hero-temp { font-size: clamp(6.5rem, 20vw, 9rem); font-weight: 300; letter-spacing: -5px; line-height: 1; }
+.hero-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-left: 20px; }
+.hero-icon { width: 70px; height: 70px; object-fit: contain; }
 
-/* Horizontal Pill Containers */
-.pill-scroll-wrapper {
-    display: flex;
-    overflow-x: auto;
-    gap: 12px;
-    padding: 10px 0;
-    scrollbar-width: none;
-}
-.pill-scroll-wrapper::-webkit-scrollbar { display: none; }
-
-.pill-item {
-    background: var(--card-inner);
-    border-radius: 40px;
-    min-width: 75px;
-    padding: 15px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-.pill-item.active { background: var(--accent); color: #000; }
-.pill-item img { width: 32px; height: 32px; margin: 8px 0; }
-.pill-label { font-size: 0.8rem; font-weight: 500; }
-
-/* Standard Bento Cards */
+/* Bento Card Style */
 .card { background: var(--surface); backdrop-filter: blur(30px); border-radius: var(--radius); padding: 22px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
-.card-header { font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; }
+.card-head { font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; }
 
-/* Search UI */
-.search-box { position: relative; margin-bottom: 20px; z-index: 1000; }
-.search-bar { width: 100%; background: rgba(45,45,48,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 14px 20px; color: #fff; font-size: 1rem; box-sizing: border-box; }
-.search-results { position: absolute; width: 100%; background: #1c1c1e; border-radius: 20px; top: 55px; border: 1px solid #333; display: none; }
-.search-item { padding: 14px 20px; border-bottom: 1px solid #222; cursor: pointer; }
+/* Horizontal Pill Scrolling */
+.pill-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0; scrollbar-width: none; }
+.pill-scroll::-webkit-scrollbar { display: none; }
+.pill-item { background: var(--card); border-radius: 40px; min-width: 75px; padding: 15px 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+.pill-item.active { background: var(--accent); color: #000; }
+.pill-item img { width: 30px; height: 30px; margin: 8px 0; }
 
-/* Navigation */
-.tab-bar-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 94%; max-width: 420px; z-index: 2000; }
-.pill-nav { background: rgba(30,30,32,0.95); border-radius: var(--radius); display: flex; padding: 5px; border: 1px solid rgba(255,255,255,0.1); }
-.tab-btn { flex: 1; border: none; background: transparent; color: #a1a1aa; padding: 14px 0; font-weight: 700; border-radius: var(--radius); cursor: pointer; }
+/* Tab Bar Fix */
+.nav-wrapper { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; z-index: 2000; }
+.pill-nav { background: rgba(30,30,32,0.95); border-radius: var(--radius); display: flex; padding: 5px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+.tab-btn { flex: 1; border: none; background: transparent; color: #a1a1aa; padding: 12px 0; font-weight: 700; font-size: 0.85rem; border-radius: var(--radius); cursor: pointer; transition: 0.2s; }
 .tab-btn.active { background: #c2e7ff; color: #000; }
 
 .fade-in { animation: fadeIn 0.4s ease forwards; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
