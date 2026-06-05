@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Weather</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/clear_day.png">
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body class="onyx-dark">
     <div id="parallax-container"><img src="assets/backdrops/backdrop.png" id="backdrop"></div>
-
     <header class="pixel-header">
         <div class="header-action">←</div>
         <div id="city-name" class="city-title">Chicago</div>
         <div class="header-action">⋮</div>
     </header>
-
     <main id="app">
         <div class="search-container">
-            <input type="text" id="global-search" class="search-bar" placeholder="Search for city..." autocomplete="off">
+            <input type="text" id="global-search" class="search-bar" placeholder="Search city..." autocomplete="off">
             <div id="results" class="search-results"></div>
         </div>
         <div id="weather-view"></div>
     </main>
-
     <nav class="pill-nav-container">
         <div class="pill-nav">
             <button class="tab-btn active" data-tab="current">Current</button>
@@ -33,9 +34,13 @@
             <button class="tab-btn" data-tab="radar">Radar</button>
         </div>
     </nav>
-
     <script src="locations.js"></script>
     <script src="js/nws.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </body>
 </html>
