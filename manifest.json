@@ -1,5 +1,5 @@
 {
-  "name": "PixelWeather",
+  "name": "Pixel Weather",
   "short_name": "Weather",
   "start_url": "index.html",
   "display": "standalone",
