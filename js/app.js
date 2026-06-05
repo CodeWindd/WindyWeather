@@ -56,22 +56,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${weather.alerts.map(a => `<div class="card fade-in" style="border-left:8px solid #ff4b4b"><b>${a.properties.event}</b></div>`).join('')}
                 <div class="card fade-in">
                     <div class="card-head">✨ Weather Insight</div>
-                    <div class="card-body">Expect ${desc.toLowerCase()} conditions. ${weather.daily[0].detailedForecast}</div>
+                    <div class="card-body">Currently ${desc.toLowerCase()}. ${weather.daily[0].detailedForecast}</div>
                 </div>`;
         } else if (tab === 'hourly') {
             const items = hourlySync.slice(0, 48).map((h, i) => {
                 const time = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
-                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${time}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, h.isDaytime)}"><b>${h.temperature}°</b></div>`;
+                const precip = h.probabilityOfPrecipitation?.value || 0;
+                const precipHTML = precip > 0 ? `<div class="precip-label">${precip}%</div>` : '<div style="height:14px"></div>';
+                
+                return `
+                    <div class="h-pill ${i === 0 ? 'active' : ''}">
+                        <div style="font-size:0.75rem">${time}</div>
+                        <img src="${NWS_SERVICE.getIcon(h.shortForecast, h.isDaytime)}">
+                        ${precipHTML}
+                        <b>${h.temperature}°</b>
+                    </div>`;
             }).join('');
             view.innerHTML = `<div class="card fade-in"><div class="card-head">48-Hour Forecast</div><div class="h-scroll">${items}</div></div>`;
         } else if (tab === 'weekly') {
-            const items = weather.daily.filter(d => d.isDaytime).map(d => `
+            const items = weather.daily.filter(d => d.isDaytime).map(d => {
+                const precip = d.probabilityOfPrecipitation?.value || 0;
+                const precipHTML = precip > 0 ? `<span class="precip-label" style="width:35px; text-align:right">${precip}%</span>` : '<span style="width:35px"></span>';
+                
+                return `
                 <div class="v-row fade-in">
                     <span style="font-weight:700; width:90px">${d.name}</span>
-                    <img src="${NWS_SERVICE.getIcon(d.shortForecast, true)}" width="32">
+                    <div style="display:flex; align-items:center; gap:8px">
+                        <img src="${NWS_SERVICE.getIcon(d.shortForecast, true)}" width="32">
+                        ${precipHTML}
+                    </div>
                     <span style="flex:1; padding-left:15px; color:var(--text-dim); font-size:0.85rem">${d.shortForecast}</span>
                     <span style="font-weight:700">${d.temperature}°</span>
-                </div>`).join('');
+                </div>`;
+            }).join('');
             view.innerHTML = `<div class="fade-in" style="padding-bottom:20px">${items}</div>`;
         } else if (tab === 'saved') {
             const list = savedLocations.map(loc => `
