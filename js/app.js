@@ -17,17 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
         view.innerHTML = '';
         if (!weather) return;
 
-        // --- Hyperlocal Time Filter for Hourly ---
-        const nowSystem = new Date();
-        const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(nowSystem.setMinutes(0,0,0)));
+        const nowSys = new Date();
+        const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(nowSys.setMinutes(0,0,0)));
 
         if (tab === 'current') {
-            const alertCards = alerts.map(a => `
-                <div class="alert-pill fade-in">
-                    <div style="font-weight:700; font-size:0.8rem; margin-bottom:4px">NWS ALERT</div>
-                    <div style="font-size:1rem">${a.properties.event}</div>
-                </div>`).join('');
-
+            const alertCards = alerts.map(a => `<div class="alert-pill fade-in"><b>NWS:</b> ${a.properties.event}</div>`).join('');
             view.innerHTML = `
                 <section class="hero fade-in">
                     <div style="font-size:1.4rem">${hourlySync[0].shortForecast}</div>
@@ -40,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${alertCards}
                 <div class="card fade-in">
                     <div class="card-head">✨ Weather Insight</div>
-                    <div class="card-body">Currently, it's ${hourlySync[0].shortForecast.toLowerCase()}. ${weather.daily[0].detailedForecast}</div>
+                    <div class="card-body">${weather.daily[0].detailedForecast}</div>
                 </div>`;
         } else if (tab === 'hourly') {
             const items = hourlySync.slice(0, 48).map((h, i) => {
@@ -59,23 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
             view.innerHTML = `<div class="card">${items}</div>`;
         } else if (tab === 'saved') {
             const list = savedLocations.map(loc => `
-                <div class="card fade-in saved-loc-card" data-lat="${loc.lat}" data-lon="${loc.lon}" data-name="${loc.name}">
-                    <div style="display:flex; justify-content:space-between; align-items:center">
-                        <h2 style="margin:0">${loc.name}</h2>
-                        <span style="opacity:0.5">View Forecast →</span>
-                    </div>
-                </div>`).join('') || '<p style="text-align:center">No saved locations.</p>';
+                <div class="card fade-in saved-loc-click" data-lat="${loc.lat}" data-lon="${loc.lon}" data-name="${loc.name}">
+                    <div style="display:flex; justify-content:space-between"><b>${loc.name}</b><span>View →</span></div>
+                </div>`).join('') || '<p>No saved locations.</p>';
             view.innerHTML = list;
-            // Rebind listeners manually for the saved tab
-            document.querySelectorAll('.saved-loc-card').forEach(c => {
-                c.onclick = () => window.loadLoc(c.dataset.lat, c.dataset.lon, c.dataset.name);
-            });
+            document.querySelectorAll('.saved-loc-click').forEach(c => c.onclick = () => window.loadLoc(c.dataset.lat, c.dataset.lon, c.dataset.name));
         } else if (tab === 'radar') {
-            view.innerHTML = `<div class="card fade-in" style="padding:0; height:65vh; overflow:hidden"><iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1" style="width:100%; height:100%; border:none"></iframe></div>`;
+            // Updated to official NWS radar station view
+            const station = weather.station || 'KORD';
+            view.innerHTML = `<div class="card fade-in" style="padding:0; height:65vh; overflow:hidden">
+                <iframe src="https://radar.weather.gov/station/${station}/standard" style="width:100%; height:100%; border:none"></iframe>
+            </div>`;
         }
     }
 
-    // Global load function for Search and Saved Tab
     window.loadLoc = (lat, lon, name) => {
         curLat = lat; curLon = lon;
         if (!savedLocations.some(l => l.name === name)) {
