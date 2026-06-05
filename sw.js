@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pixel-weather-v2';
+const CACHE_NAME = 'pixel-weather-v3';
 const ASSETS = [
   './',
   './index.html',
