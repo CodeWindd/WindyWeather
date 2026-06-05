@@ -1,7 +1,7 @@
 const NWS_SERVICE = {
     getIcon: (text, isDay = true, temp = 70) => {
         let t = text.toLowerCase();
-        const r = "icons/"; // FIXED: Direct root icons folder
+        const r = "icons/"; // Root level icons folder
 
         if (temp > 100) return r + "very_hot.png";
         if (temp < 10) return r + "very_cold.png";
@@ -26,22 +26,25 @@ const NWS_SERVICE = {
             return isDay ? r + "sunny_with_rain.png" : r + "cloudy_with_rain.png";
         }
         if (t.includes("mostly cloudy")) return isDay ? r + "mostly_cloudy_day.png" : r + "mostly_cloudy_night.png";
-        if (t.includes("partly cloudy") || t.includes("partly sunny")) return isDay ? r + "partly_cloudy_day.png" : r + "partly_cloudy_night.png";
+        if (t.includes("partly cloudy")) return isDay ? r + "partly_cloudy_day.png" : r + "partly_cloudy_night.png";
         if (t.includes("mostly clear") || t.includes("mostly sunny")) return isDay ? r + "mostly_clear_day.png" : r + "mostly_clear_night.png";
         if (t.includes("fog") || t.includes("haze")) return r + "haze_fog_dust_smoke.png";
         if (t.includes("cloudy")) return r + "cloudy.png";
         return isDay ? r + "clear_day.png" : r + "clear_night.png";
     },
 
-    async fetchFullWeather(lat, lon) {
+    async fetchNWS(lat, lon) {
         try {
             const pRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
             const p = await pRes.json();
             const [d, h] = await Promise.all([fetch(p.properties.forecast), fetch(p.properties.forecastHourly)]);
-            const dJ = await d.json();
-            const hJ = await h.json();
-            return { daily: dJ.properties.periods, hourly: hJ.properties.periods, city: p.properties.relativeLocation.properties.city };
-        } catch (e) { return null; }
+            const dj = await d.json();
+            const hj = await h.json();
+            return { daily: dj.properties.periods, hourly: hj.properties.periods, city: p.properties.relativeLocation.properties.city };
+        } catch (e) { 
+            console.error("NWS Fetch Failed", e);
+            return null; 
+        }
     },
 
     async getAlerts(lat, lon) {
