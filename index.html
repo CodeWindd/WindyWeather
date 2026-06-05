@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="onyx-theme">
+<body class="onyx-dark">
     <div id="parallax-container"><img src="assets/backdrops/backdrop.png" id="backdrop"></div>
 
-    <header class="app-header">
+    <header class="pixel-header">
         <div class="nav-btn">←</div>
-        <div id="location-name" class="city-title">Chicago</div>
+        <div id="city-name" class="city-title">Chicago</div>
         <div class="nav-btn">⋮</div>
     </header>
 
@@ -21,7 +21,7 @@
             <input type="text" id="global-search" class="search-bar" placeholder="Search global locations...">
             <div id="results" class="search-results"></div>
         </div>
-        <div id="weather-view" class="fade-in"></div>
+        <div id="weather-view"></div>
     </main>
 
     <nav class="pill-nav-container">
@@ -29,6 +29,7 @@
             <button class="tab-btn active" data-tab="current">Current</button>
             <button class="tab-btn" data-tab="hourly">Hourly</button>
             <button class="tab-btn" data-tab="weekly">7-Day</button>
+            <button class="tab-btn" data-tab="saved">Saved</button>
             <button class="tab-btn" data-tab="radar">Radar</button>
         </div>
     </nav>
