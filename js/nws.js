@@ -1,4 +1,4 @@
-const WeatherLib = {
+const WeatherUtils = {
     getIcon: (code, isDay = 1) => {
         const r = "./icons/";
         const m = {
@@ -20,7 +20,7 @@ const WeatherLib = {
     },
     async fetchAlerts(lat, lon) {
         try {
-            const res = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`, { headers: { 'User-Agent': 'PixelWeather/1.2' }});
+            const res = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`, { headers: { 'User-Agent': 'PixelWeather/1.3' }});
             const data = await res.json();
             return data.features || [];
         } catch { return []; }
