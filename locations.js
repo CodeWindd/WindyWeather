@@ -1,3 +1,5 @@
-const LocationSettings = {
-    INITIAL: { lat: 41.8781, lon: -87.6298, name: "Chicago" }
+const LocationDefaults = {
+    LAT: 41.8781,
+    LON: -87.6298,
+    NAME: "Chicago"
 };
