@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Weather</title>
+    <title>Pixel Weather</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
@@ -11,14 +11,14 @@
     <div id="parallax-container"><img src="assets/backdrops/backdrop.png" id="backdrop"></div>
 
     <header class="pixel-header">
-        <div class="header-action">←</div>
+        <div class="nav-btn">←</div>
         <div id="city-name" class="city-title">Chicago</div>
-        <div class="header-action">⋮</div>
+        <div class="nav-btn">⋮</div>
     </header>
 
     <main id="app">
-        <div class="search-container">
-            <input type="text" id="global-search" class="search-bar" placeholder="Search for a city..." autocomplete="off">
+        <div class="search-section">
+            <input type="text" id="global-search" class="search-bar" placeholder="Search global locations..." autocomplete="off">
             <div id="results" class="search-results"></div>
         </div>
         <div id="weather-view"></div>
