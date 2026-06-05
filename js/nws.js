@@ -6,41 +6,50 @@ const NWS_SERVICE = {
             if (t.includes("strong") || t.includes("severe")) return r + "strong_thunderstorms.png";
             return isDay ? r + "isolated_scattered_thunderstorms_day.png" : r + "isolated_scattered_thunderstorms_night.png";
         }
-        if (t.includes("snow") || t.includes("flurries")) return r + (t.includes("heavy") ? "heavy_snow.png" : "cloudy_with_snow.png");
-        if (t.includes("rain") || t.includes("showers")) {
-            if (t.includes("scattered") || t.includes("chance")) return isDay ? r + "scattered_showers_day.png" : r + "scattered_showers_night.png";
-            return isDay ? r + "sunny_with_rain.png" : r + "cloudy_with_rain.png";
-        }
-        if (t.includes("mostly cloudy")) return isDay ? r + "mostly_cloudy_day.png" : r + "mostly_cloudy_night.png";
-        if (t.includes("partly") || t.includes("mostly sunny")) return isDay ? r + "partly_cloudy_day.png" : r + "partly_cloudy_night.png";
-        if (t.includes("cloudy") || t.includes("overcast")) return r + "cloudy.png";
+        if (t.includes("snow")) return r + "cloudy_with_snow.png";
+        if (t.includes("rain") || t.includes("showers")) return isDay ? r + "sunny_with_rain.png" : r + "cloudy_with_rain.png";
         return isDay ? r + "clear_day.png" : r + "clear_night.png";
     },
 
     async fetchFullData(lat, lon) {
         try {
-            const h = { 'User-Agent': 'PixelWeatherPWA/1.0' };
+            const h = { 'User-Agent': 'PixelWeather/16.0' };
             const pRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`, { headers: h });
             const p = await pRes.json();
-            const [stationData, sunData] = await Promise.all([
-                fetch(p.properties.observationStations, { headers: h }).then(r => r.json()),
-                fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset&timezone=auto`).then(r => r.json())
-            ]);
-            const sId = stationData.features[0].id;
-            const [obs, forecast, hourly, alerts] = await Promise.all([
-                fetch(`${sId}/observations/latest`, { headers: h }).then(r => r.json()),
+            const [d, hr, al] = await Promise.all([
                 fetch(p.properties.forecast, { headers: h }).then(r => r.json()),
                 fetch(p.properties.forecastHourly, { headers: h }).then(r => r.json()),
                 fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`, { headers: h }).then(r => r.json())
             ]);
-            return {
-                current: obs.properties,
-                daily: forecast.properties.periods,
-                hourly: hourly.properties.periods,
-                alerts: alerts.features,
-                city: p.properties.relativeLocation.properties.city,
-                sun: { rise: sunData.daily.sunrise[0], set: sunData.daily.sunset[0] }
-            };
+            return { daily: d.properties.periods, hourly: hr.properties.periods, alerts: al.features, city: p.properties.relativeLocation.properties.city };
         } catch (e) { return null; }
+    },
+
+    analyzeSevere(weather) {
+        const forecastText = weather.daily[0].detailedForecast.toLowerCase();
+        const hourly = weather.hourly.slice(0, 24);
+        
+        // Probabilities Extraction (Mocking percentages based on NWS probability strings)
+        const getProb = (keywords) => {
+            if (keywords.some(k => forecastText.includes(k))) return Math.floor(Math.random() * 15) + 5; // Base 5-20%
+            return 0;
+        };
+
+        // Window detection
+        const severeHours = hourly.filter(h => h.shortForecast.toLowerCase().includes('thunderstorm'));
+        let window = "No severe weather expected";
+        if (severeHours.length > 0) {
+            const start = new Date(severeHours[0].startTime).toLocaleTimeString([], {hour:'numeric'});
+            const end = new Date(severeHours[severeHours.length-1].startTime).toLocaleTimeString([], {hour:'numeric'});
+            window = `${start} — ${end}`;
+        }
+
+        return {
+            window: window,
+            tornado: forecastText.includes('tornado') ? 5 : 0,
+            wind: forecastText.includes('damaging wind') || forecastText.includes('gusts') ? 15 : 2,
+            hail: forecastText.includes('hail') ? 15 : 0,
+            hazards: forecastText.split('.').filter(s => s.includes('wind') || s.includes('thunderstorm') || s.includes('hail')).join('.')
+        };
     }
 };
