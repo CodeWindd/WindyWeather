@@ -1,30 +1,46 @@
 :root {
     --bg: #000;
-    --surface: rgba(28, 28, 30, 0.8);
+    --surface: rgba(28, 28, 30, 0.85);
     --text: #fff;
     --text-dim: #a1a1aa;
     --radius: 34px;
 }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Product Sans', sans-serif; }
+
+body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Product Sans', sans-serif; overflow-x: hidden; }
 #parallax-container { position: fixed; top: 0; width: 100vw; height: 120vh; z-index: -1; }
 #backdrop { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.4) blur(10px); }
-.pixel-header { display: flex; justify-content: space-between; padding: 20px; }
-#app { padding: 0 16px 140px 16px; max-width: 500px; margin: 0 auto; }
-.search-box { position: relative; margin-bottom: 20px; }
-.search-bar { width: 100%; background: rgba(45,45,48,0.8); border: none; border-radius: var(--radius); padding: 18px 24px; color: #fff; }
-.search-results { position: absolute; width: 100%; background: #1c1c1e; border-radius: 20px; z-index: 1000; top: 65px; }
-.search-item { padding: 15px 20px; border-bottom: 1px solid #333; cursor: pointer; }
 
-/* Hero */
-.hero { text-align: center; padding: 20px 0 40px; }
-.hero-temp { font-size: 9.5rem; font-weight: 300; letter-spacing: -6px; }
-.hero-row { display: flex; justify-content: center; align-items: center; gap: 20px; padding-left: 20px; }
-.hero-icon { width: 80px; }
+.pixel-header { display: flex; justify-content: space-between; padding: 15px 20px; align-items: center; }
+.city-title { font-size: 1.2rem; font-weight: 500; }
 
-/* Bento */
-.card { background: var(--surface); backdrop-filter: blur(30px); border-radius: var(--radius); padding: 24px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
-.hourly-list-item, .weekly-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; }
-.tab-bar-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 420px; }
-.pill-nav { background: rgba(30,30,32,0.9); border-radius: var(--radius); display: flex; padding: 6px; }
-.tab-btn { flex: 1; border: none; background: transparent; color: #a1a1aa; padding: 15px 0; font-weight: 700; border-radius: var(--radius); }
+#app { padding: 0 12px 140px 12px; max-width: 480px; margin: 0 auto; }
+
+/* Responsive Hero Scaling */
+.hero { text-align: center; padding: 10px 0 30px; }
+.hero-temp { font-size: clamp(6rem, 20vw, 9rem); font-weight: 300; letter-spacing: -4px; }
+.hero-row { display: flex; justify-content: center; align-items: center; gap: 15px; }
+.hero-icon { width: clamp(50px, 15vw, 75px); }
+
+/* Compact Search Bar */
+.search-box { position: relative; margin-bottom: 15px; z-index: 1000; }
+.search-bar { width: 100%; background: rgba(45,45,48,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 14px 20px; color: #fff; font-size: 1rem; }
+.search-results { position: absolute; width: 100%; background: #1c1c1e; border-radius: 20px; top: 55px; border: 1px solid #333; overflow: hidden; }
+.search-item { padding: 12px 20px; border-bottom: 1px solid #222; cursor: pointer; font-size: 0.95rem; }
+
+/* Bento Cards - Slimmer for Mobile */
+.card { background: var(--surface); backdrop-filter: blur(30px); border-radius: var(--radius); padding: 18px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
+.card-header { font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; }
+
+.hourly-list-item, .weekly-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+/* Radar Scaling */
+#radar-view { height: 60vh; width: 100%; border-radius: var(--radius); border: none; }
+
+/* Navigation */
+.tab-bar-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 94%; max-width: 400px; z-index: 1000; }
+.pill-nav { background: rgba(30,30,32,0.95); border-radius: var(--radius); display: flex; padding: 5px; border: 1px solid rgba(255,255,255,0.1); }
+.tab-btn { flex: 1; border: none; background: transparent; color: #a1a1aa; padding: 12px 0; font-weight: 700; font-size: 0.85rem; border-radius: var(--radius); transition: 0.3s; }
 .tab-btn.active { background: #c2e7ff; color: #000; }
+
+.fade-in { animation: fadeIn 0.5s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
