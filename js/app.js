@@ -23,10 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     async function update(l1, l2, name) {
-        weather = await NWS_SERVICE.fetchForecast(l1, l2);
-        alerts = await NWS_SERVICE.getAlerts(l1, l2);
-        if (!weather) return;
-        document.getElementById('city-name').innerText = name || weather.city;
+        const data = await NWS_SERVICE.fetchForecast(l1, l2);
+        if (!data) return;
+        weather = data;
+        alerts = await NWS_SERVICE.fetchAlerts(l1, l2);
+        document.getElementById('city-name').innerText = name || data.city;
         render(document.querySelector('.tab-btn.active').dataset.tab);
     }
 
@@ -39,12 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(now.setMinutes(0,0,0)));
 
         if (tab === 'current') {
-            const lightning = NWS_SERVICE.parseLightning(alerts);
-            const lightningHTML = lightning ? `
-                <div class="card lightning-card fade-in">
-                    <div class="card-head">⚡ Lightning Detector</div>
-                    <div class="card-body">Lightning with severe storms detected <b>${lightning.detail}</b>.</div>
-                </div>` : '';
+            const lightning = alerts.find(a => a.properties.description.toLowerCase().includes('lightning'));
+            const lightningHTML = lightning ? `<div class="card lightning-card fade-in">⚡ Nearby lightning activity detected from NWS reports.</div>` : '';
+            const activeAlerts = alerts.map(a => `<div class="card fade-in stagger-1" style="border-left:8px solid #ff4b4b"><b>${a.properties.event}</b></div>`).join('');
 
             view.innerHTML = `
                 <section class="hero fade-in">
@@ -56,10 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="color:var(--text-dim)">High ${weather.daily[0].temperature}° · Low ${weather.daily[1].temperature}°</div>
                 </section>
                 ${lightningHTML}
-                <div class="card fade-in">
-                    <div class="card-head">✨ Weather Insight</div>
-                    <div class="card-body">Currently ${hourlySync[0].shortForecast.toLowerCase()}. ${weather.daily[0].detailedForecast}</div>
-                </div>`;
+                ${activeAlerts}
+                <div class="card fade-in stagger-2"><div class="card-head">✨ Weather Insight</div><div class="card-body">Currently ${hourlySync[0].shortForecast.toLowerCase()}. ${weather.daily[0].detailedForecast}</div></div>`;
         } else if (tab === 'hourly') {
             const items = hourlySync.slice(0, 48).map((h, i) => {
                 const timeStr = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
@@ -67,18 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('');
             view.innerHTML = `<div class="card fade-in"><div class="card-head">48-Hour Forecast</div><div class="h-scroll">${items}</div></div>`;
         } else if (tab === 'weekly') {
-            const items = weather.daily.map(d => `
+            // Pair day/night for a clean 7-day high/low list
+            const daysOnly = weather.daily.filter(d => d.isDaytime);
+            const items = daysOnly.map(d => `
                 <div class="v-row fade-in">
                     <span style="font-weight:700; width:90px">${d.name}</span>
-                    <img src="${NWS_SERVICE.getIcon(d.shortForecast, d.isDaytime)}" width="32">
+                    <img src="${NWS_SERVICE.getIcon(d.shortForecast, true)}" width="32">
                     <span style="flex:1; padding-left:15px; color:var(--text-dim); font-size:0.85rem">${d.shortForecast}</span>
                     <span style="font-weight:700">${d.temperature}°</span>
                 </div>`).join('');
-            view.innerHTML = `<div class="card">${items}</div>`;
+            view.innerHTML = `<div class="card fade-in"><div class="card-head">7-Day Forecast</div><div class="v-list">${items}</div></div>`;
         } else if (tab === 'saved') {
             const list = savedLocations.map(loc => `
-                <button class="card fade-in" style="width:100%; text-align:left; color:white; display:block; cursor:pointer" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')">
-                    <b>${loc.name}</b>
+                <button class="v-row fade-in" style="width:100%; color:white; margin-bottom:8px" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')">
+                    <b>${loc.name}</b><span>View →</span>
                 </button>`).join('') || '<p style="text-align:center">No saved locations.</p>';
             view.innerHTML = `<div class="card-head">Saved Locations</div>${list}<button class="delete-btn" onclick="window.deleteSaved()">Delete All Saved</button>`;
         } else if (tab === 'radar') {
