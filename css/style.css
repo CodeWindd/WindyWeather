@@ -1,53 +1,55 @@
 :root {
     --bg: #000;
-    --surface: rgba(26, 26, 28, 0.96);
-    --card: rgba(45, 45, 48, 0.85);
+    --surface: rgba(26, 26, 28, 0.92);
+    --card: rgba(45, 45, 48, 0.8);
     --text: #ffffff;
     --text-dim: #a1a1aa;
     --accent: #c2e7ff;
     --radius: 34px;
-    --danger: #ffb4ab;
+    --m3-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Product Sans', sans-serif; overflow-x: hidden; }
 
 #parallax-container { position: fixed; top: 0; width: 100vw; height: 110vh; z-index: -1; }
-#backdrop { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
+#backdrop { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.45); }
 
 .pixel-header { display: flex; justify-content: space-between; padding: 20px 24px; align-items: center; }
 .city-title { font-size: 1.3rem; font-weight: 500; }
 
-#app { padding: 0 16px 140px 16px; max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; }
+#app { padding: 0 16px 140px 16px; max-width: 500px; margin: 0 auto; min-height: 100vh; }
 
-.search-section { position: relative; margin-bottom: 24px; z-index: 3000; }
-.search-bar { width: 100%; background: var(--surface); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 18px 24px; color: #fff; font-size: 1rem; backdrop-filter: blur(20px); }
-.search-results { position: absolute; width: 100%; background: #1c1c1e; border-radius: 24px; top: 70px; overflow: hidden; border: 1px solid #333; display: none; }
-.search-item { padding: 18px 20px; border-bottom: 1px solid #222; cursor: pointer; display: block; width: 100%; text-align: left; background: none; color: white; border: none; }
+.search-bar { width: 100%; background: var(--surface); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 16px 24px; color: #fff; font-size: 1rem; backdrop-filter: blur(30px); transition: var(--m3-ease); }
+.search-results { position: absolute; width: 100%; background: #1c1c1e; border-radius: 24px; top: 70px; z-index: 5000; overflow: hidden; border: 1px solid #333; display: none; }
+.search-item { padding: 18px 20px; border-bottom: 1px solid #222; cursor: pointer; width: 100%; text-align: left; background: none; color: white; border: none; }
 
-.hero { text-align: center; padding: 20px 0 40px 0; }
-.hero-temp { font-size: clamp(7.5rem, 25vw, 9.5rem); font-weight: 300; letter-spacing: -6px; line-height: 1; }
+/* Hero Section */
+.hero { text-align: center; padding: 10px 0 40px 0; }
+.hero-temp { font-size: clamp(7.5rem, 25vw, 9.5rem); font-weight: 300; letter-spacing: -6px; line-height: 0.9; }
 .hero-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-left: 20px; }
 .hero-icon { width: 85px; height: 85px; object-fit: contain; }
 
-.card { background: var(--surface); backdrop-filter: blur(40px); border-radius: var(--radius); padding: 24px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-.card-head { color: var(--text-dim); font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; }
+/* Bento Cards */
+.card { background: var(--surface); backdrop-filter: blur(40px); border-radius: var(--radius); padding: 24px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.1); transform: translateY(20px); opacity: 0; }
+.card-head { color: var(--text-dim); font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* Lightning Card Color */
-.lightning-card { border-left: 8px solid #ffeb3b; background: rgba(255, 235, 59, 0.1); }
+/* 7-Day Range Bar */
+.v-row { display: grid; grid-template-columns: 80px 40px 1fr 40px; align-items: center; gap: 10px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.temp-bar-bg { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; }
+.temp-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; position: absolute; }
 
-.delete-btn { background: var(--danger); color: #601410; border: none; padding: 12px 24px; border-radius: var(--radius); font-weight: 700; margin-top: 20px; width: 100%; cursor: pointer; }
-
-.h-scroll { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
-.h-scroll::-webkit-scrollbar { display: none; }
-.h-pill { background: var(--card); min-width: 85px; padding: 18px 5px; border-radius: 40px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-.h-pill.active { background: var(--accent); color: #000; }
-.h-pill img { width: 36px; margin: 10px 0; }
-
+/* Tab Bar Fix */
 .pill-nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 480px; z-index: 4000; }
-.pill-nav { background: rgba(28, 28, 30, 0.98); backdrop-filter: blur(25px); border-radius: var(--radius); display: flex; padding: 6px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-.tab-btn { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 12px 0; font-weight: 700; font-size: 0.75rem; border-radius: var(--radius); cursor: pointer; }
-.tab-btn.active { background: var(--accent); color: #000; }
+.pill-nav { background: rgba(28, 28, 30, 0.98); backdrop-filter: blur(25px); border-radius: var(--radius); display: flex; padding: 6px; border: 1px solid rgba(255,255,255,0.15); }
+.tab-btn { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 12px 0; font-weight: 700; font-size: 0.75rem; border-radius: var(--radius); cursor: pointer; transition: 0.3s var(--m3-ease); }
+.tab-btn.active { background: var(--accent); color: #000; transform: scale(1.02); }
 
-.fade-in { animation: animIn 0.5s ease-out forwards; }
-@keyframes animIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+/* ULTRA SMOOTH ANIMATIONS */
+@keyframes slideUpFade {
+    to { transform: translateY(0); opacity: 1; }
+}
+.animate-card { animation: slideUpFade 0.6s var(--m3-ease) forwards; }
+
+.lightning-card { border-left: 8px solid #ffeb3b; background: rgba(255, 235, 59, 0.1); }
+.delete-btn { background: #ffb4ab; color: #601410; border: none; padding: 14px; border-radius: var(--radius); font-weight: 700; width: 100%; margin-top: 10px; cursor: pointer; }
