@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.loadLoc = async (lat, lon, name) => {
         curLat = lat; curLon = lon;
-        if (!savedLocations.some(l => l.name === name)) {
+        if (name && !savedLocations.some(l => l.name === name)) {
             savedLocations.push({ lat, lon, name });
             localStorage.setItem('saved_pixel_locs', JSON.stringify(savedLocations));
         }
@@ -14,8 +14,16 @@ document.addEventListener('DOMContentLoaded', () => {
         await update(lat, lon, name);
     };
 
+    window.deleteSaved = () => {
+        if(confirm("Clear all saved locations?")) {
+            savedLocations = [];
+            localStorage.removeItem('saved_pixel_locs');
+            render('saved');
+        }
+    };
+
     async function update(l1, l2, name) {
-        const data = await NWS_SERVICE.fetchWeatherData(l1, l2);
+        const data = await NWS_SERVICE.fetchFullData(l1, l2);
         if (!data) return;
         weather = data;
         document.getElementById('city-name').innerText = name || data.city;
@@ -27,31 +35,31 @@ document.addEventListener('DOMContentLoaded', () => {
         view.innerHTML = '';
         if (!weather) return;
 
+        const nowSystem = new Date();
+        const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(nowSystem.setMinutes(0,0,0)));
+
         if (tab === 'current') {
+            const obs = weather.current;
+            const temp = obs.temperature.value ? Math.round((obs.temperature.value * 9/5) + 32) : hourlySync[0].temperature;
+            const desc = obs.textDescription || hourlySync[0].shortForecast;
+            const isDay = obs.icon ? obs.icon.includes('day') : true;
+
             view.innerHTML = `
                 <section class="hero fade-in">
-                    <div style="font-size:1.4rem; font-weight:500">${weather.currentText}</div>
+                    <div style="font-size:1.4rem; font-weight:500">${desc}</div>
                     <div class="hero-row">
-                        <span class="hero-temp">${weather.currentTemp}</span>
-                        <img src="${NWS_SERVICE.getIcon(weather.currentText, weather.isDay)}" class="hero-icon">
+                        <span class="hero-temp">${temp}</span>
+                        <img src="${NWS_SERVICE.getIcon(desc, isDay)}" class="hero-icon">
                     </div>
                     <div style="color:var(--text-dim)">High ${weather.daily[0].temperature}° · Low ${weather.daily[1].temperature}°</div>
                 </section>
-
-                ${weather.alerts.map(a => `<div class="card alert-pill fade-in"><b>ALERT:</b> ${a.properties.event}</div>`).join('')}
-
+                ${weather.alerts.map(a => `<div class="card fade-in" style="border-left:8px solid #ff4b4b"><b>${a.properties.event}</b></div>`).join('')}
                 <div class="card fade-in">
                     <div class="card-head">✨ Weather Insight</div>
-                    <div class="card-body">Expect ${weather.currentText.toLowerCase()} conditions. ${weather.daily[0].detailedForecast}</div>
-                </div>
-
-                <div class="stats-grid fade-in">
-                    <div class="stat-box"><b>Humidity</b><br>${weather.humidity}%</div>
-                    <div class="stat-box"><b>Wind</b><br>${weather.wind} mph</div>
-                </div>
-            `;
+                    <div class="card-body">Expect ${desc.toLowerCase()} conditions. ${weather.daily[0].detailedForecast}</div>
+                </div>`;
         } else if (tab === 'hourly') {
-            const items = weather.hourly.slice(0, 48).map((h, i) => {
+            const items = hourlySync.slice(0, 48).map((h, i) => {
                 const time = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
                 return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${time}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, h.isDaytime)}"><b>${h.temperature}°</b></div>`;
             }).join('');
@@ -64,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="flex:1; padding-left:15px; color:var(--text-dim); font-size:0.85rem">${d.shortForecast}</span>
                     <span style="font-weight:700">${d.temperature}°</span>
                 </div>`).join('');
-            view.innerHTML = `<div class="card fade-in"><div class="card-head">7-Day Forecast</div><div class="v-list">${items}</div></div>`;
+            view.innerHTML = `<div class="fade-in" style="padding-bottom:20px">${items}</div>`;
         } else if (tab === 'saved') {
             const list = savedLocations.map(loc => `
                 <button class="v-row fade-in" style="width:100%; color:white; margin-bottom:8px" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')">
@@ -76,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Tab & Search listeners remain same as previous working version
     const sInput = document.getElementById('global-search');
     sInput.oninput = async (e) => {
         if (e.target.value.length < 3) return;
