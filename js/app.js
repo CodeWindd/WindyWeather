@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let weather = null, alerts = [];
+    let weather = null;
     let savedLocations = JSON.parse(localStorage.getItem('saved_pixel_locs')) || [];
     let curLat = 41.8781, curLon = -87.6298;
 
@@ -14,19 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await update(lat, lon, name);
     };
 
-    window.deleteSaved = () => {
-        if (confirm("Delete all saved locations?")) {
-            savedLocations = [];
-            localStorage.removeItem('saved_pixel_locs');
-            render('saved');
-        }
-    };
-
     async function update(l1, l2, name) {
-        const data = await NWS_SERVICE.fetchForecast(l1, l2);
+        const data = await NWS_SERVICE.fetchWeatherData(l1, l2);
         if (!data) return;
         weather = data;
-        alerts = await NWS_SERVICE.fetchAlerts(l1, l2);
         document.getElementById('city-name').innerText = name || data.city;
         render(document.querySelector('.tab-btn.active').dataset.tab);
     }
@@ -36,36 +27,37 @@ document.addEventListener('DOMContentLoaded', () => {
         view.innerHTML = '';
         if (!weather) return;
 
-        const now = new Date();
-        const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(now.setMinutes(0,0,0)));
-
         if (tab === 'current') {
-            const lightning = alerts.find(a => a.properties.description.toLowerCase().includes('lightning'));
-            const lightningHTML = lightning ? `<div class="card lightning-card fade-in">⚡ Nearby lightning activity detected from NWS reports.</div>` : '';
-            const activeAlerts = alerts.map(a => `<div class="card fade-in stagger-1" style="border-left:8px solid #ff4b4b"><b>${a.properties.event}</b></div>`).join('');
-
             view.innerHTML = `
                 <section class="hero fade-in">
-                    <div style="font-size:1.4rem">${hourlySync[0].shortForecast}</div>
+                    <div style="font-size:1.4rem; font-weight:500">${weather.currentText}</div>
                     <div class="hero-row">
-                        <span class="hero-temp">${hourlySync[0].temperature}</span>
-                        <img src="${NWS_SERVICE.getIcon(hourlySync[0].shortForecast, hourlySync[0].isDaytime)}" class="hero-icon">
+                        <span class="hero-temp">${weather.currentTemp}</span>
+                        <img src="${NWS_SERVICE.getIcon(weather.currentText, weather.isDay)}" class="hero-icon">
                     </div>
                     <div style="color:var(--text-dim)">High ${weather.daily[0].temperature}° · Low ${weather.daily[1].temperature}°</div>
                 </section>
-                ${lightningHTML}
-                ${activeAlerts}
-                <div class="card fade-in stagger-2"><div class="card-head">✨ Weather Insight</div><div class="card-body">Currently ${hourlySync[0].shortForecast.toLowerCase()}. ${weather.daily[0].detailedForecast}</div></div>`;
+
+                ${weather.alerts.map(a => `<div class="card alert-pill fade-in"><b>ALERT:</b> ${a.properties.event}</div>`).join('')}
+
+                <div class="card fade-in">
+                    <div class="card-head">✨ Weather Insight</div>
+                    <div class="card-body">Expect ${weather.currentText.toLowerCase()} conditions. ${weather.daily[0].detailedForecast}</div>
+                </div>
+
+                <div class="stats-grid fade-in">
+                    <div class="stat-box"><b>Humidity</b><br>${weather.humidity}%</div>
+                    <div class="stat-box"><b>Wind</b><br>${weather.wind} mph</div>
+                </div>
+            `;
         } else if (tab === 'hourly') {
-            const items = hourlySync.slice(0, 48).map((h, i) => {
-                const timeStr = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
-                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${timeStr}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, h.isDaytime)}"><b>${h.temperature}°</b></div>`;
+            const items = weather.hourly.slice(0, 48).map((h, i) => {
+                const time = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
+                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${time}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, h.isDaytime)}"><b>${h.temperature}°</b></div>`;
             }).join('');
             view.innerHTML = `<div class="card fade-in"><div class="card-head">48-Hour Forecast</div><div class="h-scroll">${items}</div></div>`;
         } else if (tab === 'weekly') {
-            // Pair day/night for a clean 7-day high/low list
-            const daysOnly = weather.daily.filter(d => d.isDaytime);
-            const items = daysOnly.map(d => `
+            const items = weather.daily.filter(d => d.isDaytime).map(d => `
                 <div class="v-row fade-in">
                     <span style="font-weight:700; width:90px">${d.name}</span>
                     <img src="${NWS_SERVICE.getIcon(d.shortForecast, true)}" width="32">
@@ -80,12 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>`).join('') || '<p style="text-align:center">No saved locations.</p>';
             view.innerHTML = `<div class="card-head">Saved Locations</div>${list}<button class="delete-btn" onclick="window.deleteSaved()">Delete All Saved</button>`;
         } else if (tab === 'radar') {
-            view.innerHTML = `<div class="card fade-in" style="padding:0; height:65vh; overflow:hidden">
-                <iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1&p=1&ts=512" style="width:100%; height:100%; border:none"></iframe>
-            </div>`;
+            view.innerHTML = `<div class="card fade-in" style="padding:0; height:65vh; overflow:hidden"><iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1&p=1&ts=512" style="width:100%; height:100%; border:none"></iframe></div>`;
         }
     }
 
+    // Tab & Search listeners remain same as previous working version
     const sInput = document.getElementById('global-search');
     sInput.oninput = async (e) => {
         if (e.target.value.length < 3) return;
