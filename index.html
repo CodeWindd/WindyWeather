@@ -3,32 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Weather</title>
+    <title>Pixel Weather</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="onyx-dark">
+<body class="onyx-theme">
     <div id="parallax-container"><img src="assets/backdrops/backdrop.png" id="backdrop"></div>
 
     <header class="app-header">
         <div class="nav-btn">←</div>
-        <div id="city-display" class="city-name">Chicago</div>
+        <div id="location-name" class="city-title">Chicago</div>
         <div class="nav-btn">⋮</div>
     </header>
 
     <main id="app">
-        <!-- Persistent Search -->
         <div class="search-section">
-            <div class="search-pill">
-                <input type="text" id="loc-search" placeholder="Search location..." autocomplete="off">
-            </div>
-            <div id="search-results" class="results-box"></div>
+            <input type="text" id="global-search" class="search-bar" placeholder="Search global locations...">
+            <div id="results" class="search-results"></div>
         </div>
-
-        <div id="weather-view"></div>
+        <div id="weather-view" class="fade-in"></div>
     </main>
 
-    <nav class="nav-wrapper">
+    <nav class="pill-nav-container">
         <div class="pill-nav">
             <button class="tab-btn active" data-tab="current">Current</button>
             <button class="tab-btn" data-tab="hourly">Hourly</button>
