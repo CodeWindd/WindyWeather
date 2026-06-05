@@ -1,31 +1,44 @@
-const NWS_SERVICE = {
-    // FIX: Force relative path for GitHub Pages
-    getIcon: (text, isDay = true) => {
-        let t = text.toLowerCase();
-        const r = "./icons/"; 
+const WeatherEngine = {
+    // Icons in root /icons/
+    getIcon: (code, isDay = 1, temp = 70) => {
+        const r = "./icons/";
+        if (temp > 100) return r + "very_hot.png";
+        if (temp < 15) return r + "very_cold.png";
 
-        if (t.includes("thunderstorm")) return r + (isDay ? "isolated_scattered_thunderstorms_day.png" : "isolated_scattered_thunderstorms_night.png");
-        if (t.includes("snow")) return r + (t.includes("heavy") ? "heavy_snow.png" : "cloudy_with_snow.png");
-        if (t.includes("rain") || t.includes("showers")) return r + (isDay ? "sunny_with_rain.png" : "cloudy_with_rain.png");
-        if (t.includes("mostly cloudy")) return r + (isDay ? "mostly_cloudy_day.png" : "mostly_cloudy_night.png");
-        if (t.includes("partly cloudy") || t.includes("partly sunny")) return r + (isDay ? "partly_cloudy_day.png" : "partly_cloudy_night.png");
-        if (t.includes("mostly clear") || t.includes("mostly sunny")) return r + (isDay ? "mostly_clear_day.png" : "mostly_clear_night.png");
-        if (t.includes("cloudy")) return r + "cloudy.png";
-        return r + (isDay ? "clear_day.png" : "clear_night.png");
+        const mapping = {
+            0: isDay ? "clear_day.png" : "clear_night.png",
+            1: isDay ? "mostly_clear_day.png" : "mostly_clear_night.png",
+            2: isDay ? "partly_cloudy_day.png" : "partly_cloudy_night.png",
+            3: "cloudy.png",
+            45: "haze_fog_dust_smoke.png", 48: "haze_fog_dust_smoke.png",
+            51: "drizzle.png", 53: "drizzle.png", 55: "drizzle.png",
+            61: "cloudy_with_rain.png", 63: "showers_rain.png", 65: "heavy_rain.png",
+            71: "cloudy_with_snow.png", 73: "showers_snow.png", 75: "heavy_snow.png",
+            77: "flurries.png",
+            80: isDay ? "scattered_showers_day.png" : "scattered_showers_night.png",
+            81: "heavy_rain.png", 82: "heavy_rain.png",
+            85: isDay ? "scattered_snow_showers_day.png" : "scattered_snow_showers_night.png",
+            86: "heavy_snow.png",
+            95: "isolated_thunderstorms.png", 96: "strong_thunderstorms.png", 99: "strong_thunderstorms.png"
+        };
+        return r + (mapping[code] || "cloudy.png");
     },
 
-    async fetchFullWeather(lat, lon) {
+    getDesc: (code) => {
+        const desc = {
+            0: "Clear", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Cloudy",
+            45: "Foggy", 51: "Drizzle", 61: "Rain", 71: "Snow", 80: "Showers", 95: "Thunderstorm"
+        };
+        return desc[code] || "Overcast";
+    },
+
+    async fetchAlerts(lat, lon) {
         try {
-            const h = { 'User-Agent': 'PixelWeather/1.0' };
-            const pRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`, { headers: h });
-            const p = await pRes.json();
-            const [d, hr] = await Promise.all([
-                fetch(p.properties.forecast, { headers: h }),
-                fetch(p.properties.forecastHourly, { headers: h })
-            ]);
-            const dj = await d.json();
-            const hj = await hr.json();
-            return { daily: dj.properties.periods, hourly: hj.properties.periods, city: p.properties.relativeLocation.properties.city };
-        } catch (e) { return null; }
+            const res = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`, {
+                headers: { 'User-Agent': 'PixelWeather/1.1' }
+            });
+            const data = await res.json();
+            return data.features || [];
+        } catch { return []; }
     }
 };
