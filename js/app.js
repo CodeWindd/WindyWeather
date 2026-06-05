@@ -51,34 +51,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const obs = weather.current;
             const temp = obs.temperature.value ? Math.round((obs.temperature.value * 9/5) + 32) : hourlySync[0].temperature;
             const desc = obs.textDescription || hourlySync[0].shortForecast;
-            const lightning = weather.alerts.find(a => a.properties.description.toLowerCase().includes('lightning'));
-
+            
             view.innerHTML = `
                 <section class="hero fade-in">
                     <div class="hero-cond">${desc}</div>
                     <div class="hero-row"><span class="hero-temp">${temp}</span><img src="${NWS_SERVICE.getIcon(desc, isDaylight(nowS))}" class="hero-icon"></div>
                     <div style="color:var(--text-dim)">High ${weather.daily[0].temperature}° · Low ${weather.daily[1].temperature}°</div>
                 </section>
-                ${lightning ? `<div class="card fade-in" style="border-left:8px solid #ffeb3b">⚡ Nearby lightning activity detected.</div>` : ''}
-                ${weather.alerts.map(a => `<div class="card fade-in" style="border-left:8px solid #ff4b4b"><b>ALERT:</b> ${a.properties.event}</div>`).join('')}
                 ${renderSunArc()}
                 <div class="card fade-in"><div class="card-head">✨ Insight</div><div class="card-body">${weather.daily[0].detailedForecast}</div></div>`;
         } else if (tab === 'hourly') {
             const items = hourlySync.slice(0, 48).map((h, i) => {
                 const time = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
-                const precip = h.probabilityOfPrecipitation?.value || 0;
-                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${time}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, isDaylight(h.startTime))}">${precip > 0 ? `<div class="precip-badge">${precip}%</div>` : '<div style="height:14px"></div>'}<b>${h.temperature}°</b></div>`;
+                const pr = h.probabilityOfPrecipitation?.value || 0;
+                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${time}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, isDaylight(h.startTime))}">${pr > 0 ? `<div class="precip-badge">${pr}%</div>` : '<div style="height:14px"></div>'}<b>${h.temperature}°</b></div>`;
             }).join('');
             view.innerHTML = `<div class="card fade-in"><div class="card-head">48-Hour Forecast</div><div class="h-scroll">${items}</div></div>`;
         } else if (tab === 'weekly') {
             const items = weather.daily.filter(d => d.isDaytime).map(d => `
-                <button class="v-row fade-in" style="width:100%; color:white">
-                    <span style="font-weight:700; width:90px; text-align:left">${d.name}</span>
+                <div class="v-row fade-in">
+                    <span style="font-weight:700; width:90px">${d.name}</span>
                     <img src="${NWS_SERVICE.getIcon(d.shortForecast, true)}" width="32">
-                    <span style="flex:1; padding-left:15px; color:var(--text-dim); font-size:0.85rem; text-align:left">${d.shortForecast}</span>
+                    <span style="flex:1; padding-left:15px; color:var(--text-dim); font-size:0.85rem">${d.shortForecast}</span>
                     <span style="font-weight:700">${d.temperature}°</span>
-                </button>`).join('');
-            view.innerHTML = `<div class="fade-in">${items}</div>`;
+                </div>`).join('');
+            view.innerHTML = `<div class="card fade-in"><div class="card-head">7-Day Forecast</div>${items}</div>`;
         } else if (tab === 'saved') {
             const list = saved.map(loc => `<button class="v-row fade-in" style="width:100%; color:white; margin-bottom:8px" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')"><b>${loc.name}</b><span>View →</span></button>`).join('') || '<p style="text-align:center">Empty.</p>';
             view.innerHTML = `<div class="card-head">Saved</div>${list}<button class="delete-btn" onclick="window.deleteSaved()">Delete All</button>`;
@@ -90,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadLoc = async (l1, l2, n) => {
         curLat = l1; curLon = l2;
         if (n && !saved.some(l => l.name === n)) { saved.push({lat:l1, lon:l2, name:n}); localStorage.setItem('saved_pixel_locs', JSON.stringify(saved)); }
-        document.getElementById('results').style.display='none'; document.getElementById('global-search').value='';
+        document.getElementById('results').style.display='none';
         await update(l1, l2, n);
     };
 
