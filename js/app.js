@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isDaylight = (timeStr) => {
         const check = new Date(timeStr);
-        return check > new Date(weather.sun.rise) && check < new Date(weather.sun.set);
+        const dayIdx = Math.min(Math.floor((check - new Date(weather.sun.rise[0])) / 86400000), weather.sun.rise.length-1);
+        return check > new Date(weather.sun.rise[dayIdx]) && check < new Date(weather.sun.set[dayIdx]);
     };
 
     function render(tab) {
@@ -21,47 +22,53 @@ document.addEventListener('DOMContentLoaded', () => {
         view.innerHTML = '';
         if (!weather) return;
 
-        // Sync local system time with forecast
-        const nowS = new Date();
-        const hourlySync = weather.hourly.filter(h => new Date(h.startTime) >= new Date(nowS.setMinutes(0,0,0)));
-        const isDay = isDaylight(new Date());
+        const now = new Date();
+        const hourly92 = weather.hourly.filter(h => new Date(h.startTime) >= new Date(now.setMinutes(0,0,0))).slice(0, 92);
+        const isCurrentlyDay = isDaylight(new Date());
 
         if (tab === 'current') {
-            const obs = weather.current;
-            const temp = obs.temperature.value ? Math.round((obs.temperature.value * 9/5) + 32) : hourlySync[0].temperature;
-            const desc = obs.textDescription || hourlySync[0].shortForecast;
+            // BUG FIX: Correct High/Low Logic
+            const p0 = weather.daily[0];
+            const p1 = weather.daily[1];
+            let high = p0.isDaytime ? p0.temperature : "---";
+            let low = !p0.isDaytime ? p0.temperature : p1.temperature;
             
-            // Fixed High/Low Logic (Check isDaytime for Period 0)
-            const p0 = weather.daily[0], p1 = weather.daily[1];
-            const high = p0.isDaytime ? p0.temperature : "N/A";
-            const low = p0.isDaytime ? p1.temperature : p0.temperature;
-            const tempString = isDay ? `High ${high}° · Low ${low}°` : `Low ${low}°`;
+            // If after sunset, show only Low
+            const tempDisplay = isCurrentlyDay ? `High ${high}° · Low ${low}°` : `Low ${low}°`;
+
+            const obs = weather.current;
+            const temp = obs.temperature.value ? Math.round((obs.temperature.value * 9/5) + 32) : hourly92[0].temperature;
+            const desc = obs.textDescription || hourly92[0].shortForecast;
 
             view.innerHTML = `
                 <section class="hero fade-in">
                     <div class="hero-cond">${desc}</div>
-                    <div class="hero-row"><span class="hero-temp">${temp}</span><img src="${NWS_SERVICE.getIcon(desc, isDay)}" class="hero-icon"></div>
-                    <div style="color:var(--text-dim)">${tempString}</div>
+                    <div class="hero-row"><span class="hero-temp">${temp}</span><img src="${NWS_SERVICE.getIcon(desc, isCurrentlyDay)}" class="hero-icon"></div>
+                    <div style="color:var(--text-dim); font-weight:700">${tempDisplay}</div>
                 </section>
-                <div class="card fade-in"><div class="card-head">✨ Insight</div><div class="card-body">${weather.daily[0].detailedForecast}</div></div>`;
+                <div class="card fade-in"><div class="card-head">✨ Weather Insight</div><div class="card-body">${weather.daily[0].detailedForecast}</div></div>`;
         } else if (tab === 'hourly') {
-            const items = hourlySync.slice(0, 92).map((h, i) => {
-                const pr = h.probabilityOfPrecipitation?.value || 0;
-                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${new Date(h.startTime).toLocaleTimeString([], {hour:'numeric', hour12:true})}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, isDaylight(h.startTime), pr)}">${pr > 35 ? `<div style="color:#a8c7fa; font-size:0.7rem">${pr}%</div>` : '<div style="height:12px"></div>'}<b>${h.temperature}°</b></div>`;
+            const items = hourly92.map((h, i) => {
+                const time = new Date(h.startTime).toLocaleTimeString([], { hour: 'numeric', hour12: true });
+                const prob = h.probabilityOfPrecipitation?.value || 0;
+                return `<div class="h-pill ${i === 0 ? 'active' : ''}"><div>${time}</div><img src="${NWS_SERVICE.getIcon(h.shortForecast, isDaylight(h.startTime), prob)}">${prob >= 35 ? `<div style="color:#a8c7fa; font-size:0.7rem; font-weight:700">${prob}%</div>` : '<div style="height:14px"></div>'}<b>${h.temperature}°</b></div>`;
             }).join('');
             view.innerHTML = `<div class="card fade-in"><div class="card-head">92-Hour Forecast</div><div class="h-scroll">${items}</div></div>`;
         } else if (tab === 'weekly') {
             const items = weather.daily.filter(d => d.isDaytime).map(d => `
                 <div class="v-row fade-in">
-                    <span style="font-weight:700; width:90px; text-align:left">${d.name}</span>
-                    <img src="${NWS_SERVICE.getIcon(d.shortForecast, true, d.probabilityOfPrecipitation?.value || 0)}" width="32">
+                    <span style="font-weight:700; width:80px">${d.name}</span>
+                    <img src="${NWS_SERVICE.getIcon(d.shortForecast, true)}" width="32">
                     <span style="flex:1; padding-left:15px; color:var(--text-dim); font-size:0.85rem; text-align:left">${d.shortForecast}</span>
                     <span style="font-weight:700">${d.temperature}°</span>
                 </div>`).join('');
             view.innerHTML = `<div class="fade-in">${items}</div>`;
         } else if (tab === 'saved') {
-            const list = saved.map(loc => `<button class="v-row fade-in" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')"><b>${loc.name}</b><span>View →</span></button>`).join('') || '<p style="text-align:center">Empty.</p>';
-            view.innerHTML = `<div class="card-head">Saved</div>${list}<button class="delete-btn" onclick="window.deleteSaved()">Delete All</button>`;
+            const list = saved.map(loc => `
+                <button class="v-row fade-in" onclick="window.loadLoc(${loc.lat}, ${loc.lon}, '${loc.name}')">
+                    <b style="font-size:1.1rem">${loc.name}</b><span>View →</span>
+                </button>`).join('') || '<p style="text-align:center; color:var(--text-dim)">No saved locations.</p>';
+            view.innerHTML = `<div class="card-head">Saved Locations</div>${list}<button class="delete-btn" onclick="window.deleteSaved()">Delete All Saved</button>`;
         } else if (tab === 'radar') {
             view.innerHTML = `<div class="card fade-in" style="padding:0; height:65vh; overflow:hidden"><iframe src="https://www.rainviewer.com/map.html?loc=${curLat},${curLon},6&type=radar&o99=1&eb=0&th=1&sm=1&sn=1&p=1&ts=512" style="width:100%; height:100%; border:none"></iframe></div>`;
         }
